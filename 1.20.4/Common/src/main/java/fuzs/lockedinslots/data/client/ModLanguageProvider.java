@@ -15,6 +15,5 @@ public class ModLanguageProvider extends AbstractLanguageProvider {
     public void addTranslations(TranslationBuilder builder) {
         builder.add(NoSlotInteractionHandler.KEY_CATEGORY, LockedInSlots.MOD_NAME);
         builder.add(NoSlotInteractionHandler.LOCK_SLOT_KEY_MAPPING, "Lock Slot");
-        builder.add(NoSlotInteractionHandler.KEY_SLOT_UNLOCK, "Hold %s to Unlock");
     }
 }

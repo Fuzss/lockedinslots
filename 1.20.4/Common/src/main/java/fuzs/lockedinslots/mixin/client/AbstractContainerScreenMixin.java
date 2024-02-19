@@ -24,11 +24,13 @@ abstract class AbstractContainerScreenMixin extends Screen {
 
     @ModifyVariable(method = "renderSlot", at = @At("STORE"))
     protected Pair<ResourceLocation, ResourceLocation> renderSlot(Pair<ResourceLocation, ResourceLocation> noItemIcon, GuiGraphics guiGraphics, Slot slot) {
+        // replace the vanilla item icon in case one is present
         return NoSlotInteractionHandler.getNoItemIcon(slot).orElse(noItemIcon);
     }
 
     @ModifyVariable(method = "renderSlot", at = @At("LOAD"), ordinal = 1)
     protected boolean renderSlot(boolean skipItemDecorations, GuiGraphics guiGraphics, Slot slot) {
+        // render our item icon for slots that have an item in them, vanilla only renders for empty slots which we handle in the other method
         if (slot.isActive() && slot.hasItem()) {
             Optional<Pair<ResourceLocation, ResourceLocation>> optional = NoSlotInteractionHandler.getNoItemIcon(slot);
             if (optional.isPresent()) {
