@@ -8,6 +8,7 @@ import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import fuzs.lockedinslots.LockedInSlots;
 import fuzs.lockedinslots.config.ClientConfig;
+import fuzs.lockedinslots.config.WorldSlotsStorage;
 import fuzs.puzzleslib.api.client.gui.v2.screen.ScreenHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -19,6 +20,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
+import org.jetbrains.annotations.Nullable;
 import org.lwjgl.opengl.GL11;
 
 public class TriggerLockRenderHandler {
@@ -41,29 +43,55 @@ public class TriggerLockRenderHandler {
                 triggerTime = 0;
                 TriggerLockRenderHandler.hoveredSlot = hoveredSlot;
             }
-            if (hoveredSlot != null && hoveredSlot.container instanceof Inventory) {
+            if (isLockableSlot(hoveredSlot)) {
                 Minecraft minecraft = ScreenHelper.INSTANCE.getMinecraft(screen);
-                incrementTriggerTime(minecraft, partialTick);
-                int offsetX = screen.getMenu().getCarried().isEmpty() && hoveredSlot.hasItem() ? 8 : 0;
+                incrementTriggerTime(minecraft, hoveredSlot, partialTick);
+                int offsetX = LockedInSlots.CONFIG.get(ClientConfig.class).triggerLockOffsetX;
+                if (offsetX == 0 && !LockedInSlots.CONFIG.get(ClientConfig.class).unlockSlotHint) {
+                    // offset for carried item tooltip
+                    if (screen.getMenu().getCarried().isEmpty() && hoveredSlot.hasItem()) {
+                        offsetX -= 8;
+                    }
+                }
+                int offsetY = LockedInSlots.CONFIG.get(ClientConfig.class).triggerLockOffsetY;
                 // high z offset to render in front of carried item stack
-                renderLockTrigger(minecraft, guiGraphics, mouseX - offsetX, mouseY, partialTick, 600);
+                renderLockTrigger(minecraft, guiGraphics, mouseX + offsetX, mouseY + offsetY, partialTick, 600);
             }
         } else {
             triggerTime = 0;
         }
     }
 
+    private static boolean isLockableSlot(@Nullable Slot slot) {
+        if (slot != null && slot.container instanceof Inventory) {
+            int containerSlot = getContainerSlot(slot);
+            if (WorldSlotsStorage.isSlotLocked(containerSlot)) {
+                // always allow unlocking locked slots
+                return true;
+            } else if (containerSlot < Inventory.getSelectionSize() || LockedInSlots.CONFIG.get(ClientConfig.class).allowLockingAllSlots) {
+                if (slot.hasItem()) {
+                    return !slot.getItem()
+                            .isStackable() || !LockedInSlots.CONFIG.get(ClientConfig.class).itemMustNotBeStackable;
+                } else {
+                    return !LockedInSlots.CONFIG.get(ClientConfig.class).slotMustNotBeEmpty;
+                }
+            }
+        }
+
+        return false;
+    }
+
     private static ResourceLocation getSpriteForHoveredSlot() {
-        return LockedInSlots.CONFIG.get(ClientConfig.class).isSlotLocked(getContainerSlot(hoveredSlot)) ?
+        return WorldSlotsStorage.isSlotLocked(hoveredSlot) ?
                 LOCKED_SPRITE_LOCATION :
                 UNLOCKED_SPRITE_LOCATION;
     }
 
-    private static void incrementTriggerTime(Minecraft minecraft, float partialTick) {
+    private static void incrementTriggerTime(Minecraft minecraft, Slot slot, float partialTick) {
         if ((triggerTime += partialTick) >= LockedInSlots.CONFIG.get(ClientConfig.class).triggerLockTicks) {
             // just make sure we only trigger once when the max time is reached, then set to some arbitrary value, so we do not trigger again
             if (triggerTime < MAX_TRIGGER_TIME) {
-                LockedInSlots.CONFIG.get(ClientConfig.class).triggerSlotLock(getContainerSlot(hoveredSlot));
+                WorldSlotsStorage.triggerSlotLock(getContainerSlot(slot));
                 minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
                 triggerTime = MAX_TRIGGER_TIME;
             }
@@ -71,21 +99,11 @@ public class TriggerLockRenderHandler {
     }
 
     public static int getContainerSlot(Slot slot) {
-        int index = slot.getContainerSlot();
         // creative mode inventory tab uses different slot ids :(
-        if (slot instanceof CreativeModeInventoryScreen.SlotWrapper) {
-            if (index >= 36 && index <= 44) {
-                // hotbar slots
-                index -= 36;
-            } else if (index == 45) {
-                // offhand slot
-                index = 40;
-            } else if (index >= 5 && index <= 8) {
-                // armor slots
-                index = 44 - index;
-            }
+        if (slot instanceof CreativeModeInventoryScreen.SlotWrapper slotWrapper) {
+            slot = slotWrapper.target;
         }
-        return index;
+        return slot.getContainerSlot();
     }
 
     public static boolean isKeyDown(KeyMapping keyMapping) {
@@ -98,12 +116,15 @@ public class TriggerLockRenderHandler {
     }
 
     /**
-     * Copied from Patchouli's <a href="https://github.com/VazkiiMods/Patchouli/blob/1.20.x/Xplat/src/main/java/vazkii/patchouli/client/handler/TooltipHandler.java">TooltipHandler</a>, thanks!
+     * Copied from Patchouli's <a
+     * href="https://github.com/VazkiiMods/Patchouli/blob/1.20.x/Xplat/src/main/java/vazkii/patchouli/client/handler/TooltipHandler.java">TooltipHandler</a>,
+     * thanks!
      */
     private static void renderLockTrigger(Minecraft minecraft, GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, int zOffset) {
 
         RenderSystem.disableDepthTest();
 
+        // set some gl state so the color shows later, not sure which one it is, so can't single it out
         guiGraphics.fill(0, 0, 0, 0, 0);
 
         RenderSystem.enableBlend();
@@ -114,7 +135,9 @@ public class TriggerLockRenderHandler {
 
         // just some tick counter for the pulsing effect
         float alpha = 0.5F + 0.2F * ((float) Math.cos(minecraft.player.tickCount + partialTick / 10) * 0.5F + 0.5F);
-        bufferBuilder.vertex(mouseX, mouseY, zOffset).color(COLOR_RED / 2.0F, COLOR_GREEN / 2.0F, COLOR_BLUE / 2.0F, alpha).endVertex();
+        bufferBuilder.vertex(mouseX, mouseY, zOffset)
+                .color(COLOR_RED / 2.0F, COLOR_GREEN / 2.0F, COLOR_BLUE / 2.0F, alpha)
+                .endVertex();
 
         float angles = Math.min(1.0F,
                 triggerTime / LockedInSlots.CONFIG.get(ClientConfig.class).triggerLockTicks
@@ -133,7 +156,8 @@ public class TriggerLockRenderHandler {
 
         guiGraphics.pose().pushPose();
         guiGraphics.pose().translate(0.0F, 0.0F, zOffset);
-        guiGraphics.blitSprite(getSpriteForHoveredSlot(), mouseX - 8, mouseY - 8, 16, 16);
+        ResourceLocation spriteForHoveredSlot = getSpriteForHoveredSlot();
+        guiGraphics.blitSprite(spriteForHoveredSlot, mouseX - 8, mouseY - 8, 16, 16);
         guiGraphics.pose().popPose();
 
         RenderSystem.enableDepthTest();

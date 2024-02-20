@@ -5,6 +5,7 @@ import fuzs.lockedinslots.client.handler.TriggerLockRenderHandler;
 import fuzs.puzzleslib.api.client.core.v1.ClientModConstructor;
 import fuzs.puzzleslib.api.client.core.v1.context.KeyMappingsContext;
 import fuzs.puzzleslib.api.client.event.v1.ClientTickEvents;
+import fuzs.puzzleslib.api.client.event.v1.gui.ItemTooltipCallback;
 import fuzs.puzzleslib.api.client.event.v1.gui.ScreenEvents;
 import fuzs.puzzleslib.api.client.event.v1.gui.ScreenKeyboardEvents;
 import fuzs.puzzleslib.api.client.event.v1.gui.ScreenMouseEvents;
@@ -24,6 +25,8 @@ public class LockedInSlotsClient implements ClientModConstructor {
         ScreenMouseEvents.beforeMouseScroll(AbstractContainerScreen.class).register(NoSlotInteractionHandler::onBeforeMouseScroll);
         ScreenMouseEvents.beforeMouseDrag(AbstractContainerScreen.class).register(NoSlotInteractionHandler::onBeforeMouseDrag);
         ScreenMouseEvents.beforeMouseRelease(AbstractContainerScreen.class).register(NoSlotInteractionHandler::onBeforeMouseRelease);
+        ScreenEvents.afterRender(AbstractContainerScreen.class).register(NoSlotInteractionHandler::onAfterRender);
+        ItemTooltipCallback.EVENT.register(NoSlotInteractionHandler::onItemTooltip);
         ScreenEvents.afterRender(AbstractContainerScreen.class).register(TriggerLockRenderHandler::onAfterRender);
         ClientTickEvents.START.register(NoSlotInteractionHandler::onStartClientTick);
     }

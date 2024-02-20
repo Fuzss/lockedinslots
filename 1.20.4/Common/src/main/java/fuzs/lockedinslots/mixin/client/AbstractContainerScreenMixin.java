@@ -35,8 +35,8 @@ abstract class AbstractContainerScreenMixin extends Screen {
             Optional<Pair<ResourceLocation, ResourceLocation>> optional = NoSlotInteractionHandler.getNoItemIcon(slot);
             if (optional.isPresent()) {
                 Pair<ResourceLocation, ResourceLocation> pair = optional.get();
-                TextureAtlasSprite textureAtlasSprite = this.minecraft.getTextureAtlas(pair.getFirst()).apply(
-                        pair.getSecond());
+                TextureAtlasSprite textureAtlasSprite = this.minecraft.getTextureAtlas(pair.getFirst())
+                        .apply(pair.getSecond());
                 guiGraphics.blit(slot.x, slot.y, 0, 16, 16, textureAtlasSprite);
             }
         }

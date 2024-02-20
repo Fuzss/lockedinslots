@@ -1,3 +1,5 @@
 accessWidener   v2  named
-accessible  class   net/minecraft/client/gui/screens/inventory/CreativeModeInventoryScreen$SlotWrapper
+accessible  field   net/minecraft/client/gui/screens/inventory/CreativeModeInventoryScreen$SlotWrapper  target  Lnet/minecraft/world/inventory/Slot;
 accessible  field   net/minecraft/client/KeyMapping key Lcom/mojang/blaze3d/platform/InputConstants$Key;
+accessible  field   net/minecraft/client/gui/screens/inventory/AbstractContainerScreen  doubleclick Z
+accessible  field   net/minecraft/client/gui/screens/inventory/AbstractContainerScreen  lastClickTime   J
