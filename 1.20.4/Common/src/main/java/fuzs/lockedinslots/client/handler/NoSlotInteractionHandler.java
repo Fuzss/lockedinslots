@@ -30,7 +30,7 @@ import java.util.Optional;
 public class NoSlotInteractionHandler {
     public static final String KEY_CATEGORY = "key.categories." + LockedInSlots.MOD_ID;
     private static final String KEY_NAME = "key.lockSlot";
-    public static final KeyMapping LOCK_SLOT_KEY_MAPPING = new KeyMapping(KEY_NAME, InputConstants.KEY_J, KEY_CATEGORY);
+    public static final KeyMapping LOCK_SLOT_KEY_MAPPING = new KeyMapping(KEY_NAME, InputConstants.UNKNOWN.getValue(), KEY_CATEGORY);
     public static final ResourceLocation LOCKED_SLOT_LOCATION = LockedInSlots.id("item/locked_slot");
     public static final String KEY_SLOT_UNLOCK = "screen.slot.unlock";
 

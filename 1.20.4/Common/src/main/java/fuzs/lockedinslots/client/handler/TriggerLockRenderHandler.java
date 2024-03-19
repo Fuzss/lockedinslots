@@ -59,6 +59,7 @@ public class TriggerLockRenderHandler {
             }
         } else {
             triggerTime = 0;
+            hoveredSlot = null;
         }
     }
 
@@ -68,10 +69,11 @@ public class TriggerLockRenderHandler {
             if (WorldSlotsStorage.isSlotLocked(containerSlot)) {
                 // always allow unlocking locked slots
                 return true;
-            } else if (containerSlot < Inventory.getSelectionSize() || LockedInSlots.CONFIG.get(ClientConfig.class).allowLockingAllSlots) {
+            } else if (containerSlot < Inventory.getSelectionSize() ||
+                    LockedInSlots.CONFIG.get(ClientConfig.class).allowLockingAllSlots) {
                 if (slot.hasItem()) {
-                    return !slot.getItem()
-                            .isStackable() || !LockedInSlots.CONFIG.get(ClientConfig.class).itemMustNotBeStackable;
+                    return !slot.getItem().isStackable() ||
+                            !LockedInSlots.CONFIG.get(ClientConfig.class).itemMustNotBeStackable;
                 } else {
                     return !LockedInSlots.CONFIG.get(ClientConfig.class).slotMustNotBeEmpty;
                 }
@@ -82,9 +84,7 @@ public class TriggerLockRenderHandler {
     }
 
     private static ResourceLocation getSpriteForHoveredSlot() {
-        return WorldSlotsStorage.isSlotLocked(hoveredSlot) ?
-                LOCKED_SPRITE_LOCATION :
-                UNLOCKED_SPRITE_LOCATION;
+        return WorldSlotsStorage.isSlotLocked(hoveredSlot) ? LOCKED_SPRITE_LOCATION : UNLOCKED_SPRITE_LOCATION;
     }
 
     private static void incrementTriggerTime(Minecraft minecraft, Slot slot, float partialTick) {
@@ -100,15 +100,15 @@ public class TriggerLockRenderHandler {
 
     public static int getContainerSlot(Slot slot) {
         // creative mode inventory tab uses different slot ids :(
-        if (slot instanceof CreativeModeInventoryScreen.SlotWrapper slotWrapper) {
-            slot = slotWrapper.target;
-        }
-        return slot.getContainerSlot();
+        return slot instanceof CreativeModeInventoryScreen.SlotWrapper slotWrapper ?
+                slotWrapper.target.getContainerSlot() :
+                slot.getContainerSlot();
     }
 
     public static boolean isKeyDown(KeyMapping keyMapping) {
         // we need to listen to repeat events for the key press, this is not possible using the key mapping instance
-        if (keyMapping.key.getType() == InputConstants.Type.KEYSYM && keyMapping.key.getValue() != InputConstants.UNKNOWN.getValue()) {
+        if (keyMapping.key.getType() == InputConstants.Type.KEYSYM &&
+                keyMapping.key.getValue() != InputConstants.UNKNOWN.getValue()) {
             return InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), keyMapping.key.getValue());
         } else {
             return false;
@@ -139,9 +139,8 @@ public class TriggerLockRenderHandler {
                 .color(COLOR_RED / 2.0F, COLOR_GREEN / 2.0F, COLOR_BLUE / 2.0F, alpha)
                 .endVertex();
 
-        float angles = Math.min(1.0F,
-                triggerTime / LockedInSlots.CONFIG.get(ClientConfig.class).triggerLockTicks
-        ) * 360.0F;
+        float angles =
+                Math.min(1.0F, triggerTime / LockedInSlots.CONFIG.get(ClientConfig.class).triggerLockTicks) * 360.0F;
         for (float f = angles; f >= 0.0F; f--) {
             double rad = (f - 90.0) / 180.0 * Math.PI;
             bufferBuilder.vertex(mouseX + Math.cos(rad) * (float) CIRCLE_RADIUS,
