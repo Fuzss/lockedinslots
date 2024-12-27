@@ -28,7 +28,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class NoSlotInteractionHandler {
-    public static final KeyMapping LOCK_SLOT_KEY_MAPPING = KeyMappingHelper.registerUnboundKeyMapping(LockedInSlots.id("lock_slot"));
+    public static final KeyMapping LOCK_SLOT_KEY_MAPPING = KeyMappingHelper.registerUnboundKeyMapping(LockedInSlots.id(
+            "lock_slot"));
     public static final ResourceLocation LOCKED_SLOT_LOCATION = LockedInSlots.id("item/locked_slot");
     public static final String KEY_SLOT_UNLOCK = "screen.slot.unlock";
 
@@ -40,11 +41,13 @@ public class NoSlotInteractionHandler {
         Slot hoveredSlot = screen.hoveredSlot;
         if (hoveredSlot != null && hoveredSlot.container instanceof Inventory) {
             if (mustBeEmpty != hoveredSlot.hasItem() && WorldSlotsStorage.isSlotLocked(hoveredSlot)) {
-                if (mustBeEmpty || ignoreCarriedStack || Screen.hasShiftDown() || Screen.hasAltDown() || Screen.hasControlDown()) {
+                if (mustBeEmpty || ignoreCarriedStack || Screen.hasShiftDown() || Screen.hasAltDown() ||
+                        Screen.hasControlDown()) {
                     return true;
                 } else {
                     ItemStack carriedStack = screen.getMenu().getCarried();
-                    return carriedStack.isEmpty() || !ItemStack.isSameItemSameComponents(hoveredSlot.getItem(), carriedStack);
+                    return carriedStack.isEmpty() ||
+                            !ItemStack.isSameItemSameComponents(hoveredSlot.getItem(), carriedStack);
                 }
             }
         }
@@ -66,8 +69,9 @@ public class NoSlotInteractionHandler {
 
     public static EventResult onBeforeMouseRelease(AbstractContainerScreen<?> screen, double mouseX, double mouseY, int button) {
         if (LockedInSlots.CONFIG.get(ClientConfig.class).preventDoubleClickActionsForLockedItems) {
-            Slot hoveredSlot = screen.findSlot(mouseX, mouseY);
-            if (hoveredSlot != null && screen.doubleclick && button == InputConstants.MOUSE_BUTTON_LEFT && screen.getMenu().canTakeItemForPickAll(ItemStack.EMPTY, hoveredSlot)) {
+            Slot hoveredSlot = screen.getHoveredSlot(mouseX, mouseY);
+            if (hoveredSlot != null && screen.doubleclick && button == InputConstants.MOUSE_BUTTON_LEFT &&
+                    screen.getMenu().canTakeItemForPickAll(ItemStack.EMPTY, hoveredSlot)) {
                 Inventory inventory = screen.minecraft.player.getInventory();
                 ItemStack itemStack = screen.getMenu().getCarried();
                 for (int slot : WorldSlotsStorage.getLockedSlots()) {
@@ -99,9 +103,8 @@ public class NoSlotInteractionHandler {
             }
             if (isHoveringLockedSlot(screen, true, false)) {
                 // don't block all keys, so closing via esc or inventory key still works when hovering a locked slot
-                if (minecraft.options.keySwapOffhand.matches(key, scanCode) || minecraft.options.keyDrop.matches(key,
-                        scanCode
-                )) {
+                if (minecraft.options.keySwapOffhand.matches(key, scanCode) ||
+                        minecraft.options.keyDrop.matches(key, scanCode)) {
                     return EventResult.INTERRUPT;
                 }
             }
@@ -118,7 +121,9 @@ public class NoSlotInteractionHandler {
     }
 
     private static Component getKeybindTooltipComponent() {
-        return Component.translatable(KEY_SLOT_UNLOCK, Component.keybind(LOCK_SLOT_KEY_MAPPING.getName()).withStyle(ChatFormatting.GOLD)).withStyle(ChatFormatting.GRAY);
+        return Component.translatable(KEY_SLOT_UNLOCK,
+                        Component.keybind(LOCK_SLOT_KEY_MAPPING.getName()).withStyle(ChatFormatting.GOLD))
+                .withStyle(ChatFormatting.GRAY);
     }
 
     public static void onItemTooltip(ItemStack itemStack, List<Component> tooltipLines, Item.TooltipContext tooltipContext, @Nullable Player player, TooltipFlag tooltipType) {
@@ -126,9 +131,12 @@ public class NoSlotInteractionHandler {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.screen instanceof AbstractContainerScreen<?> abstractContainerScreen) {
             Slot hoveredSlot = abstractContainerScreen.hoveredSlot;
-            if (hoveredSlot != null && hoveredSlot.container instanceof Inventory && hoveredSlot.getItem() == itemStack) {
-                if (abstractContainerScreen.getMenu().getCarried().isEmpty() && WorldSlotsStorage.isSlotLocked(hoveredSlot)) {
-                    tooltipLines.add(!tooltipLines.isEmpty() ? 1 : 0, NoSlotInteractionHandler.getKeybindTooltipComponent());
+            if (hoveredSlot != null && hoveredSlot.container instanceof Inventory &&
+                    hoveredSlot.getItem() == itemStack) {
+                if (abstractContainerScreen.getMenu().getCarried().isEmpty() &&
+                        WorldSlotsStorage.isSlotLocked(hoveredSlot)) {
+                    tooltipLines.add(!tooltipLines.isEmpty() ? 1 : 0,
+                            NoSlotInteractionHandler.getKeybindTooltipComponent());
                 }
             }
         }

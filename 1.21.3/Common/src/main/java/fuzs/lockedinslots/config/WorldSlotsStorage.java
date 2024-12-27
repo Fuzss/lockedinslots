@@ -37,7 +37,7 @@ public final class WorldSlotsStorage {
     }
 
     private WorldSlotsStorage() {
-
+        // NO-OP
     }
 
     public static IntSet getLockedSlots() {

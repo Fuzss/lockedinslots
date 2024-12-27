@@ -16,15 +16,20 @@ public class LockedInSlotsClient implements ClientModConstructor {
 
     @Override
     public void onConstructMod() {
-        registerHandlers();
+        registerEventHandlers();
     }
 
-    private static void registerHandlers() {
-        ScreenKeyboardEvents.beforeKeyPress(AbstractContainerScreen.class).register(NoSlotInteractionHandler::onBeforeKeyPress);
-        ScreenMouseEvents.beforeMouseClick(AbstractContainerScreen.class).register(NoSlotInteractionHandler::onBeforeMouseClick);
-        ScreenMouseEvents.beforeMouseScroll(AbstractContainerScreen.class).register(NoSlotInteractionHandler::onBeforeMouseScroll);
-        ScreenMouseEvents.beforeMouseDrag(AbstractContainerScreen.class).register(NoSlotInteractionHandler::onBeforeMouseDrag);
-        ScreenMouseEvents.beforeMouseRelease(AbstractContainerScreen.class).register(NoSlotInteractionHandler::onBeforeMouseRelease);
+    private static void registerEventHandlers() {
+        ScreenKeyboardEvents.beforeKeyPress(AbstractContainerScreen.class)
+                .register(NoSlotInteractionHandler::onBeforeKeyPress);
+        ScreenMouseEvents.beforeMouseClick(AbstractContainerScreen.class)
+                .register(NoSlotInteractionHandler::onBeforeMouseClick);
+        ScreenMouseEvents.beforeMouseScroll(AbstractContainerScreen.class)
+                .register(NoSlotInteractionHandler::onBeforeMouseScroll);
+        ScreenMouseEvents.beforeMouseDrag(AbstractContainerScreen.class)
+                .register(NoSlotInteractionHandler::onBeforeMouseDrag);
+        ScreenMouseEvents.beforeMouseRelease(AbstractContainerScreen.class)
+                .register(NoSlotInteractionHandler::onBeforeMouseRelease);
         ScreenEvents.afterRender(AbstractContainerScreen.class).register(NoSlotInteractionHandler::onAfterRender);
         ItemTooltipCallback.EVENT.register(NoSlotInteractionHandler::onItemTooltip);
         ScreenEvents.afterRender(AbstractContainerScreen.class).register(TriggerLockRenderHandler::onAfterRender);

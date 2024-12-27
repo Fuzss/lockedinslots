@@ -5,6 +5,7 @@ import fuzs.lockedinslots.client.handler.NoSlotInteractionHandler;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -37,7 +38,7 @@ abstract class AbstractContainerScreenMixin extends Screen {
                 Pair<ResourceLocation, ResourceLocation> pair = optional.get();
                 TextureAtlasSprite textureAtlasSprite = this.minecraft.getTextureAtlas(pair.getFirst())
                         .apply(pair.getSecond());
-                guiGraphics.blit(slot.x, slot.y, 0, 16, 16, textureAtlasSprite);
+                guiGraphics.blitSprite(RenderType::guiTextured, textureAtlasSprite, slot.x, slot.y, 16, 16);
             }
         }
         return skipItemDecorations;

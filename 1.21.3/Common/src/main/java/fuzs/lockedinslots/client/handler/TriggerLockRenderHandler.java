@@ -1,5 +1,6 @@
 package fuzs.lockedinslots.client.handler;
 
+import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
@@ -11,6 +12,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.client.renderer.CoreShaders;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundEvents;
@@ -18,7 +21,6 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import org.jetbrains.annotations.Nullable;
-import org.lwjgl.opengl.GL11;
 
 public class TriggerLockRenderHandler {
     public static final ResourceLocation LOCKED_SPRITE_LOCATION = LockedInSlots.id("widget/locked");
@@ -97,8 +99,7 @@ public class TriggerLockRenderHandler {
     public static int getContainerSlot(Slot slot) {
         // creative mode inventory tab uses different slot ids :(
         return slot instanceof CreativeModeInventoryScreen.SlotWrapper slotWrapper ?
-                slotWrapper.target.getContainerSlot() :
-                slot.getContainerSlot();
+                slotWrapper.target.getContainerSlot() : slot.getContainerSlot();
     }
 
     public static boolean isKeyDown(KeyMapping keyMapping) {
@@ -118,15 +119,13 @@ public class TriggerLockRenderHandler {
      */
     private static void renderLockTrigger(Minecraft minecraft, GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick, int zOffset) {
 
+        RenderSystem.setShader(CoreShaders.POSITION_COLOR);
         RenderSystem.disableDepthTest();
-
-        // set some gl state so the color shows later, not sure which one it is, so can't single it out
-        guiGraphics.fill(0, 0, 0, 0, 0);
-
         RenderSystem.enableBlend();
-        RenderSystem.blendFunc(GL11.GL_SRC_ALPHA, GL11.GL_ONE_MINUS_SRC_ALPHA);
+        RenderSystem.blendFunc(GlStateManager.SourceFactor.SRC_ALPHA, GlStateManager.DestFactor.ONE_MINUS_SRC_ALPHA);
 
-        BufferBuilder bufferBuilder = Tesselator.getInstance().begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
+        BufferBuilder bufferBuilder = Tesselator.getInstance()
+                .begin(VertexFormat.Mode.TRIANGLE_FAN, DefaultVertexFormat.POSITION_COLOR);
 
         // just some tick counter for the pulsing effect
         float alpha = 0.5F + 0.2F * ((float) Math.cos(minecraft.player.tickCount + partialTick / 10) * 0.5F + 0.5F);
@@ -139,20 +138,19 @@ public class TriggerLockRenderHandler {
             float rad = (f - 90.0F) / 180.0F * Mth.PI;
             bufferBuilder.addVertex(mouseX + Mth.cos(rad) * (float) CIRCLE_RADIUS,
                     mouseY + Mth.sin(rad) * (float) CIRCLE_RADIUS,
-                    zOffset
-            ).setColor(COLOR_RED, COLOR_GREEN, COLOR_BLUE, 1.0F);
+                    zOffset).setColor(COLOR_RED, COLOR_GREEN, COLOR_BLUE, 1.0F);
         }
 
         bufferBuilder.addVertex(mouseX, mouseY, zOffset).setColor(COLOR_RED, COLOR_GREEN, COLOR_BLUE, 0.0F);
         BufferUploader.drawWithShader(bufferBuilder.buildOrThrow());
+
         RenderSystem.disableBlend();
+        RenderSystem.enableDepthTest();
 
         guiGraphics.pose().pushPose();
         guiGraphics.pose().translate(0.0F, 0.0F, zOffset);
         ResourceLocation spriteForHoveredSlot = getSpriteForHoveredSlot();
-        guiGraphics.blitSprite(spriteForHoveredSlot, mouseX - 8, mouseY - 8, 16, 16);
+        guiGraphics.blitSprite(RenderType::guiTextured, spriteForHoveredSlot, mouseX - 8, mouseY - 8, 16, 16);
         guiGraphics.pose().popPose();
-
-        RenderSystem.enableDepthTest();
     }
 }
