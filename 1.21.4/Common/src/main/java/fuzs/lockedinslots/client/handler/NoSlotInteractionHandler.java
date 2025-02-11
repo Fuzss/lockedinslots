@@ -1,7 +1,6 @@
 package fuzs.lockedinslots.client.handler;
 
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.datafixers.util.Pair;
 import fuzs.lockedinslots.LockedInSlots;
 import fuzs.lockedinslots.config.ClientConfig;
 import fuzs.lockedinslots.config.WorldSlotsStorage;
@@ -17,7 +16,6 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.InventoryMenu;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -30,7 +28,7 @@ import java.util.Optional;
 public class NoSlotInteractionHandler {
     public static final KeyMapping LOCK_SLOT_KEY_MAPPING = KeyMappingHelper.registerUnboundKeyMapping(LockedInSlots.id(
             "lock_slot"));
-    public static final ResourceLocation LOCKED_SLOT_LOCATION = LockedInSlots.id("item/locked_slot");
+    public static final ResourceLocation LOCKED_SLOT_LOCATION = LockedInSlots.id("container/slot/locked");
     public static final String KEY_SLOT_UNLOCK = "screen.slot.unlock";
 
     private static boolean isHoveringLockedSlot(AbstractContainerScreen<?> screen) {
@@ -153,9 +151,9 @@ public class NoSlotInteractionHandler {
         }
     }
 
-    public static Optional<Pair<ResourceLocation, ResourceLocation>> getNoItemIcon(Slot slot) {
+    public static Optional<ResourceLocation> getNoItemIcon(Slot slot) {
         if (slot.container instanceof Inventory && WorldSlotsStorage.isSlotLocked(slot)) {
-            return Optional.of(Pair.of(InventoryMenu.BLOCK_ATLAS, LOCKED_SLOT_LOCATION));
+            return Optional.of(LOCKED_SLOT_LOCATION);
         } else {
             return Optional.empty();
         }
