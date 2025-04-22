@@ -14,10 +14,6 @@ public class ClientConfig implements ConfigCore {
     @Config(description = "Maximum time in ticks it takes to switch the lock on a slot.")
     @Config.IntRange(min = 1, max = TriggerLockRenderHandler.MAX_TRIGGER_TIME)
     public int triggerLockTicks = 12;
-    @Config(description = "X-offset for trigger lock progress overlay from mouse cursor tip as center.")
-    public int triggerLockOffsetX = -8;
-    @Config(description = "Y-offset for trigger lock progress overlay from mouse cursor tip as center.")
-    public int triggerLockOffsetY = -4;
     @Config(description = "Transparency value for drawing the locked slot overlay on the gui hotbar.")
     @Config.DoubleRange(min = 0.0, max = 1.0)
     public double guiHotbarOverlayAlpha = 0.6;

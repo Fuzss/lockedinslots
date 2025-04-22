@@ -142,7 +142,7 @@ public class NoSlotInteractionHandler {
 
     public static void onStartClientTick(Minecraft minecraft) {
         if (minecraft.player != null) {
-            int slot = minecraft.player.getInventory().selected;
+            int slot = minecraft.player.getInventory().getSelectedSlot();
             if (WorldSlotsStorage.isSlotLocked(slot)) {
                 while (minecraft.options.keyDrop.consumeClick()) {
                     // NO-OP
