@@ -1,5 +1,5 @@
 {
   "key.categories.lockedinslots": "Locked In Slots",
-  "key.lock_slot": "Lock Slot",
+  "key.lockedinslots.lock_slot": "Lock Slot",
   "screen.slot.unlock": "Hold %s to Unlock Slot"
 }

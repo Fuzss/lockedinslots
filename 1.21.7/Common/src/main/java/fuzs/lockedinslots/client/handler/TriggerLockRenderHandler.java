@@ -9,7 +9,6 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
-import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
@@ -39,20 +38,14 @@ public class TriggerLockRenderHandler {
                     if (WorldSlotsStorage.isSlotLocked(hoveredSlot)) {
                         animationProgress = 1.0F - animationProgress;
                     }
-                    guiGraphics.pose().pushPose();
-                    guiGraphics.pose().translate(screen.leftPos, screen.topPos, 0.0F);
+                    guiGraphics.pose().pushMatrix();
+                    guiGraphics.pose().translate(screen.leftPos, screen.topPos);
                     int posX = hoveredSlot.x;
                     int posY = hoveredSlot.y + Mth.floor(16.0F * (1.0F - animationProgress));
                     // high z offset to render in front of carried item stack
                     // color kindly stolen from Bedrockify mod's slot highlight :P
-                    guiGraphics.fill(RenderType.gui(),
-                            posX,
-                            posY,
-                            posX + 16,
-                            posY + Mth.ceil(16.0F * animationProgress),
-                            350,
-                            0X8955BA00);
-                    guiGraphics.pose().popPose();
+                    guiGraphics.fill(posX, posY, posX + 16, posY + Mth.ceil(16.0F * animationProgress), 0X8955BA00);
+                    guiGraphics.pose().popMatrix();
                 }
             }
         } else {
@@ -67,11 +60,11 @@ public class TriggerLockRenderHandler {
             if (WorldSlotsStorage.isSlotLocked(containerSlot)) {
                 // always allow unlocking locked slots
                 return true;
-            } else if (containerSlot < Inventory.getSelectionSize() ||
-                    LockedInSlots.CONFIG.get(ClientConfig.class).allowLockingAllSlots) {
+            } else if (containerSlot < Inventory.getSelectionSize()
+                    || LockedInSlots.CONFIG.get(ClientConfig.class).allowLockingAllSlots) {
                 if (slot.hasItem()) {
-                    return !slot.getItem().isStackable() ||
-                            !LockedInSlots.CONFIG.get(ClientConfig.class).itemMustNotBeStackable;
+                    return !slot.getItem().isStackable()
+                            || !LockedInSlots.CONFIG.get(ClientConfig.class).itemMustNotBeStackable;
                 } else {
                     return !LockedInSlots.CONFIG.get(ClientConfig.class).slotMustNotBeEmpty;
                 }
@@ -100,8 +93,8 @@ public class TriggerLockRenderHandler {
 
     public static boolean isKeyDown(KeyMapping keyMapping) {
         // we need to listen to repeat events for the key press, this is not possible using the key mapping instance
-        if (keyMapping.key.getType() == InputConstants.Type.KEYSYM &&
-                keyMapping.key.getValue() != InputConstants.UNKNOWN.getValue()) {
+        if (keyMapping.key.getType() == InputConstants.Type.KEYSYM
+                && keyMapping.key.getValue() != InputConstants.UNKNOWN.getValue()) {
             return InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), keyMapping.key.getValue());
         } else {
             return false;

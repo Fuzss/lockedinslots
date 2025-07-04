@@ -7,7 +7,7 @@ import fuzs.lockedinslots.config.WorldSlotsStorage;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.util.ARGB;
 import net.minecraft.world.entity.player.Inventory;
 import org.spongepowered.asm.mixin.Mixin;
@@ -21,7 +21,7 @@ abstract class GuiMixin {
     @Inject(
             method = "renderItemHotbar", at = @At(
             value = "INVOKE",
-            target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Ljava/util/function/Function;Lnet/minecraft/resources/ResourceLocation;IIII)V",
+            target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lcom/mojang/blaze3d/pipeline/RenderPipeline;Lnet/minecraft/resources/ResourceLocation;IIII)V",
             shift = At.Shift.AFTER,
             ordinal = 0
     )
@@ -31,7 +31,7 @@ abstract class GuiMixin {
         if (alpha > 0.0F) {
             for (int slot : WorldSlotsStorage.getLockedSlots()) {
                 if (slot < Inventory.getSelectionSize()) {
-                    guiGraphics.blitSprite(RenderType::guiTextured,
+                    guiGraphics.blitSprite(RenderPipelines.GUI_TEXTURED,
                             NoSlotInteractionHandler.LOCKED_SLOT_LOCATION,
                             guiGraphics.guiWidth() / 2 - 91 + 3 + slot * 20,
                             guiGraphics.guiHeight() - 22 + 3,
