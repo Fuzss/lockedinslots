@@ -114,7 +114,7 @@ public class NoSlotInteractionHandler {
     public static void onAfterRender(AbstractContainerScreen<?> screen, GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         if (!LockedInSlots.CONFIG.get(ClientConfig.class).unlockSlotHint) return;
         if (isHoveringLockedSlot(screen, true, true)) {
-            guiGraphics.setTooltipForNextFrame(screen.font, getKeybindTooltipComponent(), mouseX, mouseY);
+            guiGraphics.setTooltipForNextFrame(screen.getFont(), getKeybindTooltipComponent(), mouseX, mouseY);
         }
     }
 
