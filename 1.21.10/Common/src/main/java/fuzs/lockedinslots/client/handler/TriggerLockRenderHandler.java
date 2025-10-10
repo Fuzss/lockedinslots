@@ -95,7 +95,7 @@ public class TriggerLockRenderHandler {
         // we need to listen to repeat events for the key press, this is not possible using the key mapping instance
         if (keyMapping.key.getType() == InputConstants.Type.KEYSYM
                 && keyMapping.key.getValue() != InputConstants.UNKNOWN.getValue()) {
-            return InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), keyMapping.key.getValue());
+            return InputConstants.isKeyDown(Minecraft.getInstance().getWindow(), keyMapping.key.getValue());
         } else {
             return false;
         }

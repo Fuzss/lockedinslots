@@ -6,12 +6,14 @@ import fuzs.lockedinslots.config.ClientConfig;
 import fuzs.lockedinslots.config.WorldSlotsStorage;
 import fuzs.puzzleslib.api.client.key.v1.KeyMappingHelper;
 import fuzs.puzzleslib.api.event.v1.core.EventResult;
+import fuzs.puzzleslib.api.util.v1.CommonHelper;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -39,8 +41,8 @@ public class NoSlotInteractionHandler {
         Slot hoveredSlot = screen.hoveredSlot;
         if (hoveredSlot != null && hoveredSlot.container instanceof Inventory) {
             if (mustBeEmpty != hoveredSlot.hasItem() && WorldSlotsStorage.isSlotLocked(hoveredSlot)) {
-                if (mustBeEmpty || ignoreCarriedStack || Screen.hasShiftDown() || Screen.hasAltDown()
-                        || Screen.hasControlDown()) {
+                if (mustBeEmpty || ignoreCarriedStack || CommonHelper.hasShiftDown() || CommonHelper.hasAltDown()
+                        || CommonHelper.hasControlDown()) {
                     return true;
                 } else {
                     ItemStack carriedStack = screen.getMenu().getCarried();
@@ -57,25 +59,25 @@ public class NoSlotInteractionHandler {
         return isHoveringLockedSlot(screen) ? EventResult.INTERRUPT : EventResult.PASS;
     }
 
-    public static EventResult onBeforeMouseDrag(AbstractContainerScreen<?> screen, double mouseX, double mouseY, int button, double dragX, double dragY) {
+    public static EventResult onBeforeMouseDrag(AbstractContainerScreen<?> screen, MouseButtonEvent mouseButtonEvent, double dragX, double dragY) {
         return isHoveringLockedSlot(screen) ? EventResult.INTERRUPT : EventResult.PASS;
     }
 
-    public static EventResult onBeforeMouseClick(AbstractContainerScreen<?> screen, double mouseX, double mouseY, int button) {
+    public static EventResult onBeforeMouseClick(AbstractContainerScreen<?> screen, MouseButtonEvent mouseButtonEvent) {
         return isHoveringLockedSlot(screen) ? EventResult.INTERRUPT : EventResult.PASS;
     }
 
-    public static EventResult onBeforeMouseRelease(AbstractContainerScreen<?> screen, double mouseX, double mouseY, int button) {
+    public static EventResult onBeforeMouseRelease(AbstractContainerScreen<?> screen, MouseButtonEvent mouseButtonEvent) {
         if (LockedInSlots.CONFIG.get(ClientConfig.class).preventDoubleClickActionsForLockedItems) {
-            Slot hoveredSlot = screen.getHoveredSlot(mouseX, mouseY);
-            if (hoveredSlot != null && screen.doubleclick && button == InputConstants.MOUSE_BUTTON_LEFT
-                    && screen.getMenu().canTakeItemForPickAll(ItemStack.EMPTY, hoveredSlot)) {
+            Slot hoveredSlot = screen.getHoveredSlot(mouseButtonEvent.x(), mouseButtonEvent.y());
+            if (hoveredSlot != null && screen.doubleclick
+                    && mouseButtonEvent.button() == InputConstants.MOUSE_BUTTON_LEFT && screen.getMenu()
+                    .canTakeItemForPickAll(ItemStack.EMPTY, hoveredSlot)) {
                 Inventory inventory = screen.minecraft.player.getInventory();
                 ItemStack itemStack = screen.getMenu().getCarried();
                 for (int slot : WorldSlotsStorage.getLockedSlots()) {
                     if (ItemStack.isSameItemSameComponents(inventory.getItem(slot), itemStack)) {
                         screen.doubleclick = false;
-                        screen.lastClickTime = 0L;
                         return EventResult.INTERRUPT;
                     }
                 }
@@ -85,15 +87,15 @@ public class NoSlotInteractionHandler {
         return isHoveringLockedSlot(screen) ? EventResult.INTERRUPT : EventResult.PASS;
     }
 
-    public static EventResult onBeforeKeyPress(AbstractContainerScreen<?> screen, int key, int scanCode, int modifiers) {
-        if (LOCK_SLOT_KEY_MAPPING.matches(key, scanCode)) {
+    public static EventResult onBeforeKeyPress(AbstractContainerScreen<?> screen, KeyEvent keyEvent) {
+        if (KeyMappingHelper.isKeyActiveAndMatches(LOCK_SLOT_KEY_MAPPING, keyEvent)) {
             // this is handled during rendering without taking the key mapping instance into account
             return EventResult.INTERRUPT;
         } else {
             Minecraft minecraft = screen.minecraft;
             // prevent swapping slots if the hotbar slot to swap with is locked
             for (int i = 0; i < Inventory.getSelectionSize(); ++i) {
-                if (minecraft.options.keyHotbarSlots[i].matches(key, scanCode)) {
+                if (KeyMappingHelper.isKeyActiveAndMatches(minecraft.options.keyHotbarSlots[i], keyEvent)) {
                     if (!minecraft.player.getInventory().getItem(i).isEmpty() && WorldSlotsStorage.isSlotLocked(i)) {
                         return EventResult.INTERRUPT;
                     }
@@ -101,8 +103,8 @@ public class NoSlotInteractionHandler {
             }
             if (isHoveringLockedSlot(screen, true, false)) {
                 // don't block all keys, so closing via esc or inventory key still works when hovering a locked slot
-                if (minecraft.options.keySwapOffhand.matches(key, scanCode) || minecraft.options.keyDrop.matches(key,
-                        scanCode)) {
+                if (KeyMappingHelper.isKeyActiveAndMatches(minecraft.options.keySwapOffhand, keyEvent)
+                        || KeyMappingHelper.isKeyActiveAndMatches(minecraft.options.keyDrop, keyEvent)) {
                     return EventResult.INTERRUPT;
                 }
             }
@@ -112,7 +114,10 @@ public class NoSlotInteractionHandler {
     }
 
     public static void onAfterRender(AbstractContainerScreen<?> screen, GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        if (!LockedInSlots.CONFIG.get(ClientConfig.class).unlockSlotHint) return;
+        if (!LockedInSlots.CONFIG.get(ClientConfig.class).unlockSlotHint) {
+            return;
+        }
+
         if (isHoveringLockedSlot(screen, true, true)) {
             guiGraphics.setTooltipForNextFrame(screen.getFont(), getKeybindTooltipComponent(), mouseX, mouseY);
         }
