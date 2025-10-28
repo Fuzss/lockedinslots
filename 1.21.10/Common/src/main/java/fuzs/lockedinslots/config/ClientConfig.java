@@ -1,6 +1,6 @@
 package fuzs.lockedinslots.config;
 
-import fuzs.lockedinslots.client.handler.TriggerLockRenderHandler;
+import fuzs.lockedinslots.client.handler.SlotOverlayHandler;
 import fuzs.puzzleslib.api.config.v3.Config;
 import fuzs.puzzleslib.api.config.v3.ConfigCore;
 
@@ -12,7 +12,7 @@ public class ClientConfig implements ConfigCore {
     @Config(description = "Support locking any inventory slot, including armor and offhand.")
     public boolean allowLockingAllSlots = true;
     @Config(description = "Maximum time in ticks it takes to switch the lock on a slot.")
-    @Config.IntRange(min = 1, max = TriggerLockRenderHandler.MAX_TRIGGER_TIME)
+    @Config.IntRange(min = 1, max = SlotOverlayHandler.MAX_TRIGGER_TIME)
     public int triggerLockTicks = 12;
     @Config(description = "Transparency value for drawing the locked slot overlay on the gui hotbar.")
     @Config.DoubleRange(min = 0.0, max = 1.0)

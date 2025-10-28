@@ -5,7 +5,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Maps;
 import com.google.common.io.Files;
 import fuzs.lockedinslots.LockedInSlots;
-import fuzs.lockedinslots.client.handler.TriggerLockRenderHandler;
+import fuzs.lockedinslots.client.handler.SlotOverlayHandler;
 import fuzs.puzzleslib.api.core.v1.ModLoaderEnvironment;
 import it.unimi.dsi.fastutil.ints.IntAVLTreeSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -46,7 +46,7 @@ public final class WorldSlotsStorage {
     }
 
     public static boolean isSlotLocked(Slot slot) {
-        return isSlotLocked(TriggerLockRenderHandler.getContainerSlot(slot));
+        return isSlotLocked(SlotOverlayHandler.unwrapSlot(slot).getContainerSlot());
     }
 
     public static boolean isSlotLocked(int slot) {
@@ -82,8 +82,7 @@ public final class WorldSlotsStorage {
     private static void save() {
         try {
             try (PrintWriter printWriter = new PrintWriter(new OutputStreamWriter(new FileOutputStream(WorldSlotsStorage.DATA_PATH.toFile()),
-                    StandardCharsets.UTF_8
-            ))) {
+                    StandardCharsets.UTF_8))) {
                 for (Map.Entry<String, IntSet> entry : WORLD_SLOTS.entrySet()) {
                     if (!entry.getValue().isEmpty()) {
                         printWriter.print(entry.getKey());
@@ -104,8 +103,7 @@ public final class WorldSlotsStorage {
         try {
             if (WorldSlotsStorage.DATA_PATH.toFile().exists()) {
                 try (BufferedReader bufferedReader = Files.newReader(WorldSlotsStorage.DATA_PATH.toFile(),
-                        Charsets.UTF_8
-                )) {
+                        Charsets.UTF_8)) {
                     bufferedReader.lines().forEach((string) -> {
                         try {
                             Iterator<String> iterator = WORLD_ENTRY_SPLITTER.split(string).iterator();
@@ -119,8 +117,7 @@ public final class WorldSlotsStorage {
                                     LockedInSlots.LOGGER.warn("Invalid integer value for entry {} = {}",
                                             worldName,
                                             s,
-                                            exception
-                                    );
+                                            exception);
                                 }
                             }
                             WORLD_SLOTS.put(worldName.intern(), integers);

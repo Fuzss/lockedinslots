@@ -39,7 +39,7 @@ abstract class GuiMixin {
                             16,
                             ARGB.white(alpha));
                 } else {
-                    // the locked slots set is sorted, so after we are past hotbar indices we can stop
+                    // the locked slots set is sorted, so after we are past hotbar indices, we can stop
                     break;
                 }
             }

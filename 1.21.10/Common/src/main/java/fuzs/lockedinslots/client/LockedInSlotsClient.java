@@ -1,15 +1,15 @@
 package fuzs.lockedinslots.client;
 
+import fuzs.lockedinslots.LockedInSlots;
 import fuzs.lockedinslots.client.handler.NoSlotInteractionHandler;
-import fuzs.lockedinslots.client.handler.TriggerLockRenderHandler;
+import fuzs.lockedinslots.client.handler.SlotOverlayHandler;
 import fuzs.puzzleslib.api.client.core.v1.ClientModConstructor;
+import fuzs.puzzleslib.api.client.core.v1.context.GuiLayersContext;
 import fuzs.puzzleslib.api.client.core.v1.context.KeyMappingsContext;
 import fuzs.puzzleslib.api.client.event.v1.ClientTickEvents;
-import fuzs.puzzleslib.api.client.event.v1.gui.ItemTooltipCallback;
-import fuzs.puzzleslib.api.client.event.v1.gui.ScreenEvents;
-import fuzs.puzzleslib.api.client.event.v1.gui.ScreenKeyboardEvents;
-import fuzs.puzzleslib.api.client.event.v1.gui.ScreenMouseEvents;
-import fuzs.puzzleslib.api.client.key.v1.KeyActivationContext;
+import fuzs.puzzleslib.api.client.event.v1.gui.*;
+import fuzs.puzzleslib.api.client.key.v1.KeyActivationHandler;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 
 public class LockedInSlotsClient implements ClientModConstructor {
@@ -32,12 +32,29 @@ public class LockedInSlotsClient implements ClientModConstructor {
                 .register(NoSlotInteractionHandler::onBeforeMouseRelease);
         ScreenEvents.afterRender(AbstractContainerScreen.class).register(NoSlotInteractionHandler::onAfterRender);
         ItemTooltipCallback.EVENT.register(NoSlotInteractionHandler::onItemTooltip);
-        ScreenEvents.afterRender(AbstractContainerScreen.class).register(TriggerLockRenderHandler::onAfterRender);
         ClientTickEvents.START.register(NoSlotInteractionHandler::onStartClientTick);
+        ScreenEvents.afterRender(AbstractContainerScreen.class).register(SlotOverlayHandler::onAfterRender);
+        RenderTooltipCallback.EVENT.register(SlotOverlayHandler::onRenderTooltip);
+        ClientTickEvents.END.register(SlotOverlayHandler::onEndClientTick);
+    }
+
+    @Override
+    public void onRegisterGuiLayers(GuiLayersContext context) {
+        context.registerGuiLayer(GuiLayersContext.HOTBAR,
+                LockedInSlots.id("slot_overlay"),
+                SlotOverlayHandler::renderGuiLayer);
     }
 
     @Override
     public void onRegisterKeyMappings(KeyMappingsContext context) {
-        context.registerKeyMapping(NoSlotInteractionHandler.LOCK_SLOT_KEY_MAPPING, KeyActivationContext.SCREEN);
+        context.registerKeyMapping(NoSlotInteractionHandler.LOCK_SLOT_KEY_MAPPING,
+                KeyActivationHandler.of()
+                        .withGameHandler((Minecraft minecraft) -> {
+                            // NO-OP
+                        })
+                        .withScreenHandler((Class<AbstractContainerScreen<?>>) (Class<?>) AbstractContainerScreen.class,
+                                (AbstractContainerScreen<?> screen) -> {
+                                    // NO-OP
+                                }));
     }
 }
