@@ -86,7 +86,8 @@ public class SlotOverlayHandler {
     public static void onEndClientTick(Minecraft minecraft) {
         if (minecraft.player != null) {
             lastTriggerTime = triggerTime;
-            if (isKeyDown(NoSlotInteractionHandler.LOCK_SLOT_KEY_MAPPING)) {
+            if (isKeyDown(NoSlotInteractionHandler.LOCK_SLOT_KEY_MAPPING)
+                    && !LockedInSlots.CONFIG.get(ClientConfig.class).switchLockInstantly()) {
                 Slot slot = getHoveredSlot(minecraft.screen, minecraft.player);
                 resetTriggerValues(slot);
                 if (isValidSlot(slot, minecraft.player)) {
@@ -147,9 +148,22 @@ public class SlotOverlayHandler {
         // just make sure we only trigger once when the max time is reached, then set to some arbitrary value, so we do not trigger again
         if (triggerTime < MAX_TRIGGER_TIME
                 && ++triggerTime >= LockedInSlots.CONFIG.get(ClientConfig.class).triggerLockTicks) {
+            executeTriggerAction(minecraft, slot);
+            triggerTime = MAX_TRIGGER_TIME;
+        }
+    }
+
+    public static void executeTriggerAction(Minecraft minecraft) {
+        if (LockedInSlots.CONFIG.get(ClientConfig.class).switchLockInstantly()) {
+            Slot slot = getHoveredSlot(minecraft.screen, minecraft.player);
+            executeTriggerAction(minecraft, slot);
+        }
+    }
+
+    private static void executeTriggerAction(Minecraft minecraft, Slot slot) {
+        if (isValidSlot(slot, minecraft.player)) {
             minecraft.getSoundManager().play(SimpleSoundInstance.forUI(SoundEvents.UI_BUTTON_CLICK, 1.0F));
             WorldSlotsStorage.triggerSlotLock(unwrapSlot(slot).getContainerSlot());
-            triggerTime = MAX_TRIGGER_TIME;
         }
     }
 

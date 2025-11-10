@@ -9,7 +9,6 @@ import fuzs.puzzleslib.api.client.core.v1.context.KeyMappingsContext;
 import fuzs.puzzleslib.api.client.event.v1.ClientTickEvents;
 import fuzs.puzzleslib.api.client.event.v1.gui.*;
 import fuzs.puzzleslib.api.client.key.v1.KeyActivationHandler;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 
 public class LockedInSlotsClient implements ClientModConstructor {
@@ -49,12 +48,10 @@ public class LockedInSlotsClient implements ClientModConstructor {
     public void onRegisterKeyMappings(KeyMappingsContext context) {
         context.registerKeyMapping(NoSlotInteractionHandler.LOCK_SLOT_KEY_MAPPING,
                 KeyActivationHandler.of()
-                        .withGameHandler((Minecraft minecraft) -> {
-                            // NO-OP
-                        })
+                        .withGameHandler(SlotOverlayHandler::executeTriggerAction)
                         .withScreenHandler((Class<AbstractContainerScreen<?>>) (Class<?>) AbstractContainerScreen.class,
                                 (AbstractContainerScreen<?> screen) -> {
-                                    // NO-OP
+                                    SlotOverlayHandler.executeTriggerAction(screen.minecraft);
                                 }));
     }
 }
