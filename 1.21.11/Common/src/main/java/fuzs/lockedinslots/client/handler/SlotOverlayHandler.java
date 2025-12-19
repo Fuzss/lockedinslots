@@ -22,7 +22,7 @@ import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
@@ -47,10 +47,10 @@ public class SlotOverlayHandler {
 
     public static void renderGuiLayer(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
         Player player = Minecraft.getInstance().gui.getCameraPlayer();
-        if (player != null) {
+        if (player != null && hoveredSlot != null) {
             float partialTick = deltaTracker.getGameTimeDeltaPartialTick(false);
             if (getNormalizedTriggerTime(partialTick) > 0.0F) {
-                int selectedSlot = Minecraft.getInstance().player.getInventory().getSelectedSlot();
+                int selectedSlot = hoveredSlot.getContainerSlot();
                 int posX = guiGraphics.guiWidth() / 2 - 90 + selectedSlot * 20 + 2;
                 int posY = guiGraphics.guiHeight() - 16 - 3;
                 renderSlotOverlay(guiGraphics, posX, posY, partialTick);

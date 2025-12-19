@@ -15,14 +15,14 @@ import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
@@ -30,7 +30,7 @@ import java.util.Optional;
 public class NoSlotInteractionHandler {
     public static final KeyMapping LOCK_SLOT_KEY_MAPPING = KeyMappingHelper.registerUnboundKeyMapping(LockedInSlots.id(
             "lock_slot"));
-    public static final ResourceLocation LOCKED_SLOT_LOCATION = LockedInSlots.id("container/slot/locked");
+    public static final Identifier LOCKED_SLOT_LOCATION = LockedInSlots.id("container/slot/locked");
     public static final String KEY_SLOT_UNLOCK = "screen.slot.unlock";
 
     private static boolean isHoveringLockedSlot(AbstractContainerScreen<?> screen) {
@@ -156,7 +156,7 @@ public class NoSlotInteractionHandler {
         }
     }
 
-    public static Optional<ResourceLocation> getNoItemIcon(Slot slot) {
+    public static Optional<Identifier> getNoItemIcon(Slot slot) {
         if (slot.container instanceof Inventory && WorldSlotsStorage.isSlotLocked(slot)) {
             return Optional.of(LOCKED_SLOT_LOCATION);
         } else {
