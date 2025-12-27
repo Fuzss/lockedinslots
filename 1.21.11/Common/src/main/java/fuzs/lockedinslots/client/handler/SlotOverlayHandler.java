@@ -50,7 +50,7 @@ public class SlotOverlayHandler {
         if (player != null && hoveredSlot != null) {
             float partialTick = deltaTracker.getGameTimeDeltaPartialTick(false);
             if (getNormalizedTriggerTime(partialTick) > 0.0F) {
-                int selectedSlot = hoveredSlot.getContainerSlot();
+                int selectedSlot = unwrapSlot(hoveredSlot).getContainerSlot();
                 int posX = guiGraphics.guiWidth() / 2 - 90 + selectedSlot * 20 + 2;
                 int posY = guiGraphics.guiHeight() - 16 - 3;
                 renderSlotOverlay(guiGraphics, posX, posY, partialTick);
